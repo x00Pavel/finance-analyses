@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "fin-analyzer"
+version = "0.1.0"
+description = ""
+authors = ["x00Pavel <pavel.yadlouski@veeam.com>"]
+readme = "README.md"
+# packages = [{include = "bot"}]
+
+[tool.poetry.scripts]
+start = "bot.app:main()"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^1.5.3"
+SQLAlchemy = "^2.0.0"
+gspread = "^5.7.2"
+pytelegrambotapi = "^4.9.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
