@@ -10,3 +10,6 @@ def gen_yes_no_keyboard():
     keyboard.add(types.InlineKeyboardButton("Yes", callback_data="cb_yes"),
                  types.InlineKeyboardButton("No", callback_data="cb_no"))
     return keyboard
+
+
+date_format = '%d.%m.%Y'

@@ -10,4 +10,3 @@ ch = logging.StreamHandler(sys.stdout)
 logger.addHandler(ch)
 logger.setLevel(logging.DEBUG)  # or use logging.INFO
 ch.setFormatter(formatter)
-

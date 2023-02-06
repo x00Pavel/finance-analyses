@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 
 from bot.exceptions import BotException
 from bot.google import categories
-from bot.tg import date_format
-from bot.helpers import get_raw_message
+from bot.helpers import get_raw_message, date_format
 
 
 @dataclass
@@ -39,3 +39,12 @@ class Expanses:
 
     def __str__(self):
         return f'{self.category} {self.amount} at {self.date.strftime(date_format)}'
+
+
+class CommandsEnum(Enum):
+    START = 'start'
+    LOGIN = 'login'
+    NEW = 'new'
+    ADD = 'add'
+    HELP = 'help'
+    ADD_EMAIL = 'add_email'

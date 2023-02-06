@@ -1,0 +1,13 @@
+---
+services:
+  mongo:
+    image: mongo:4.0.4
+    container_name: mongo
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root_pswd
+    volumes:
+      - ./data:/data/db
+    ports:
+      - 27017:27017
