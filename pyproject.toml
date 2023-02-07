@@ -3,10 +3,9 @@ name = "bot"
 version = "0.1.0"
 description = ""
 authors = ["x00Pavel <pavel.yadlouski@veeam.com>"]
-readme = "README.md"
 
 [tool.poetry.scripts]
-start = "bot.app:main()"
+start = "bot.app:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -17,6 +16,7 @@ pytelegrambotapi = "^4.9.0"
 pymongo = "^4.3.3"
 mongoengine = "^0.26.0"
 email-validator = "^1.3.1"
+pydantic = "^1.10.4"
 
 
 [tool.poetry.group.dev.dependencies]

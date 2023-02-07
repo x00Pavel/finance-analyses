@@ -1,7 +1,7 @@
 import logging
 import sys
 
-formatter = logging.Formatter('[%(pathname)s:%(lineno)d %(levelname)s]: %(message)s')
+formatter = logging.Formatter('[%(name)s:%(lineno)d %(levelname)s]: %(message)s')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
