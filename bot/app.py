@@ -14,4 +14,11 @@ def main():
     gs = GoogleSheet(config.gs_creds)
     bot = init_bot(config.tg, gs)
     logger.info('Bot is ready to work.')
-    bot.infinity_polling()
+    try:
+        if config.tg.webhook_url:
+            bot.run_webhooks(webhook_url=config.tg.webhook_url, port=5000)
+        else:
+            bot.remove_webhook()
+            bot.infinity_polling()
+    finally:
+        bot.stop_bot()
