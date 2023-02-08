@@ -1,7 +1,7 @@
 import logging
 
-from email_validator import EmailNotValidError
-from pydantic import validate_email
+from email_validator import EmailNotValidError, validate_email
+from telebot.types import Message
 
 from bot.datatypes import CommandsEnum
 from bot.db import User
@@ -11,14 +11,15 @@ logger = logging.getLogger(__name__)
 
 
 def register_initial_commands(bot):
-    def email_handler(message):
+    def email_handler(message: Message):
         try:
             email = validate_email(message.text).email
-            user = User(login=message.from_user.username, personal_email=email).save()
+            user = User(login=message.from_user.username or str(message.from_user.id), personal_email=email).save()
             bot.send_message(message.chat.id, f'Email {email} added to {user.login}')
         except EmailNotValidError as e:
             text = f'Email is not valid {e} Please, use /{CommandsEnum.LOGIN.value} command  again with valid email ' \
                    f'address.'
+            logger.debug(f'Email is not valid {e}')
             bot.send_message(message.chat.id, text)
 
     @bot.message_handler(commands=[CommandsEnum.START.value, CommandsEnum.HELP.value])

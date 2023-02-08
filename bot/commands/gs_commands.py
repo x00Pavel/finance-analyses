@@ -28,7 +28,7 @@ def expanse_factory(text: str, user: "User", **kwargs) -> Expanses:
 
 def get_month(text):
     parts = text.split(' ')
-    return int(parts[1]) if len(parts) > 1 else None
+    return int(parts[1]) if len(parts) > 1 else datetime.now().month
 
 
 def gen_categories_buttons(expanse: Expanses):
@@ -46,13 +46,18 @@ def register_gs_commands(bot, gs: GoogleSheet):
     @bot.message_handler(commands=[CommandsEnum.NEW.value])
     def new_sheet(message):
         month = get_month(message.text)
-        user = get_user(message.from_user.username)
-        if not user:
-            msg = f'Please, provide your email with {CommandsEnum.LOGIN.value} ' \
-                  'command to share the spreadsheet with it.'
-            bot.send_message(message.chat.id, msg)
-        else:
-            gs.create_sheet(user, month)
+        user = get_user(message.from_user)
+        try:
+            if not user.personal_email:
+                msg = f'Please, provide your email with /{CommandsEnum.LOGIN.value} ' \
+                      'command to share the spreadsheet with it.'
+                bot.send_message(message.chat.id, msg)
+            else:
+                logger.debug(f'Creating new sheet for {user} and month {month}')
+                month = gs.create_sheet(user, month)
+                bot.send_message(message.chat.id, f'New sheet created for {user} and month {month}')
+        except BotException as e:
+            bot.send_message(message.chat.id, e)
 
     def evaluate_expense(chat_id, expense: Expanses):
         if expense.category not in expense.user.categories:
@@ -74,7 +79,7 @@ def register_gs_commands(bot, gs: GoogleSheet):
     @bot.callback_query_handler(lambda call: call.data.startswith('user_category'))
     def category_button_handler(call):
         logger.debug(f'Category button handler: {call.data}')
-        user = get_user(call.from_user.username)
+        user = get_user(call.from_user)
         expense = expanse_factory(call.data, user)
         logger.debug(f'Expense: {expense}')
         evaluate_expense(call.message.chat.id, expense)
@@ -90,7 +95,7 @@ def register_gs_commands(bot, gs: GoogleSheet):
     @bot.message_handler(commands=[CommandsEnum.ADD.value])
     def add_expense(message):
         try:
-            user = get_user(message.from_user.username)
+            user = get_user(message.from_user)
             if not user:
                 raise BotException(f'You are not logged in. Please, use /{CommandsEnum.LOGIN.value} for this')
             expanse = expanse_factory(message.text, user)

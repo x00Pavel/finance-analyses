@@ -28,5 +28,6 @@ def store_user(user_id, user_email) -> Document:
 
 
 def get_user(user_id) -> User:
-    return User.objects(login=user_id).first()
+    login = user_id.username or str(user_id.id)
+    return User.objects(login=login).first()
 

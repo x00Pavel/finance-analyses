@@ -22,7 +22,7 @@ def register_categories_commands(bot):
     def category_handler(message):
         category = message.text
         logger.debug('Setting new categories')
-        result = get_user(message.from_user.username).add_category(category)
+        result = get_user(message.from_user).add_category(category)
         msg = f'Categories are set to {result.categories}'
         logger.debug('Sending message: %s', msg)
         bot.send_message(message.chat.id, msg)

@@ -1,7 +1,7 @@
 import logging
 
-from email_validator import EmailNotValidError
-from pydantic import validate_email
+from email_validator import EmailNotValidError, validate_email
+
 
 from bot.datatypes import CommandsEnum
 from bot.db import User, get_user
@@ -19,7 +19,7 @@ def register_emails_commands(bot):
                 result_emails.append(validation.email)
             except EmailNotValidError as e:
                 bot.send_message(message.chat.id, f'Email {email} is not valid: {e}')
-        result = get_user(message.from_user.username).add_additional_email(result_emails)
+        result = get_user(message.from_user).add_additional_email(result_emails)
         msg = f'Emails are updated to {result.additional_emails}'
         logger.debug('Sending message: %s', msg)
         bot.send_message(message.chat.id, msg)

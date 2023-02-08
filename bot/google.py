@@ -5,13 +5,16 @@ import gspread
 
 from bot.datatypes import CommandsEnum
 from bot.db import get_user, User
+from bot.exceptions import BotException
 
 logger = logging.getLogger(__name__)
+
+prefix = 'Expenses'
 
 
 class GoogleSheet:
     def __init__(self, gs_file: str):
-        self.gc = gspread.service_account(filename=gs_file)
+        self.gs = gspread.service_account(filename=gs_file)
 
     @staticmethod
     def _get_dates(month: int):
@@ -32,22 +35,25 @@ class GoogleSheet:
             return file.add_worksheet(title=f'{month}', rows=45, cols=10)
 
     def get_file(self, user: User, year: int):
+        file_name = f'{prefix} {user.login} {year}'
         try:
-            file = self.gc.open(f'{year}')
+            file = self.gs.open(file_name)
         except gspread.exceptions.SpreadsheetNotFound:
-            logger.info(f'Creating file for {year}')
-            file = self.gc.create(f'{year}')
+            logger.info(f'Creating file {file_name}')
+            file = self.gs.create(file_name)
             file.share(user.personal_email, perm_type='user', role='writer')
+            logger.info(f'Sharing file with {user.personal_email} for {file_name}')
+
         return file
 
     def create_sheet(self, user: User, month: int = None):
-        date_now = datetime.now()
-        date_year = date_now.year
-        if month is None:
-            month = date_now.month
+        date_year = datetime.now().year
+        if not user.categories:
+            raise BotException(f'Please, provide categories with /{CommandsEnum.ADD_CATEGORY.value} command')
         dates_list = self._get_dates(month)
         file = self.get_file(user, date_year)
         ws = self.get_sheet(file, month)
+
         num_of_columns = 1 + len(user.categories)
         my_list = [[None for _ in range(num_of_columns)] for _ in range(len(dates_list) + 1)]
         my_list[0] = ['Date', *user.categories]
@@ -58,6 +64,7 @@ class GoogleSheet:
         last_row = len(dates_list) + 1
         cell_range = f'A1:{last_column}{last_row}'
         ws.update(cell_range, my_list, raw=False)
+        return month_name[month]
 
     def write_expanse(self, expanse: "Expanses"):
         if expanse.user is None:
