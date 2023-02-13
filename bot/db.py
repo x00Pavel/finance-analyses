@@ -1,6 +1,10 @@
+import logging
+
 from mongoengine import Document, StringField, ListField, connect
 
 from bot.config import MongoConfig
+
+logger = logging.getLogger(__name__)
 
 
 def connect_db(config: MongoConfig):
@@ -19,7 +23,8 @@ class User(Document):
         return self.save()
 
     def add_category(self, category: str):
-        self.categories.extend(category.split(' '))
+        self.categories = set(filter(None, category.split(' ')))
+        logger.debug(f'Result categories: {self.categories}')
         return self.save()
 
 
