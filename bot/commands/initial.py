@@ -26,6 +26,11 @@ def register_initial_commands(bot):
     def send_welcome(message):
         bot.send_message(message.chat.id, welcome_msg)
 
+    @bot.message_handler(commands=[CommandsEnum.LIST.value])
+    def list_commands(message):
+        cmd_list = '\n'.join([f'/{c.value}' for c in CommandsEnum])
+        bot.send_message(message.chat.id, f"Available commands:\n{cmd_list}")
+
     @bot.message_handler(commands=[CommandsEnum.LOGIN.value])
     def login(message):
         parts = message.text.split(' ')

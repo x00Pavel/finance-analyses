@@ -5,9 +5,39 @@ services:
     container_name: mongo
     restart: on-failure
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root_pswd
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWD:-root}
     volumes:
       - ./data:/data/db
     ports:
       - 27017:27017
+
+  ngrok:
+    image: wernight/ngrok
+    container_name: ngrok
+    restart: on-failure
+    environment:
+      NGROK_AUTH: ${NGROK_AUTH}
+      NGROK_PORT: bot:${TG_WEBHOOK_PORT}
+      NGROK_DEBUG: 1
+    ports:
+      - 4040:4040
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      GS_CREDS: "/opt/app/credentials.json"
+      TG_WEBHOOK_PORT: ${TG_WEBHOOK_PORT}
+      TG_TOKEN: ${TG_TOKEN}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_DB: ${MONGO_DB}
+      MONGO_USER: ${MONGO_USER}
+      MONGO_PASSWD: ${MONGO_PASSWD}
+      TG_WEBHOOK_URL: ${TG_WEBHOOK_URL}
+
+    container_name: bot
+    restart: on-failure
+

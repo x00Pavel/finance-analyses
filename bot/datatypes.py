@@ -64,6 +64,7 @@ class Expanses:
 
 
 class CommandsEnum(Enum):
+    LIST = "list_cmd"
     ADD_CATEGORY = 'add_category'
     START = 'start'
     LOGIN = 'login'
