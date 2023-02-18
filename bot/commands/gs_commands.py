@@ -53,9 +53,9 @@ def register_gs_commands(bot, gs: GoogleSheet):
                       'command to share the spreadsheet with it.'
                 bot.send_message(message.chat.id, msg)
             else:
-                logger.debug(f'Creating new sheet for {user} and month {month}')
+                logger.debug(f'Creating new sheet for {user.login} and month {month}')
                 month = gs.create_sheet(user, month)
-                bot.send_message(message.chat.id, f'New sheet created for {user} and month {month}')
+                bot.send_message(message.chat.id, f'New sheet created for {user.login} and month {month}')
         except BotException as e:
             bot.send_message(message.chat.id, e)
 

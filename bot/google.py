@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 from calendar import month_name
 import gspread
 
+from bot.config import GSConfig
 from bot.datatypes import CommandsEnum
 from bot.db import get_user, User
 from bot.exceptions import BotException
@@ -13,8 +14,9 @@ prefix = 'Expenses'
 
 
 class GoogleSheet:
-    def __init__(self, gs_file: str):
-        self.gs = gspread.service_account(filename=gs_file)
+    def __init__(self, cfg: GSConfig):
+        self.gs = gspread.service_account(filename=cfg.creds)
+        self.file_prefix = cfg.file_prefix
 
     @staticmethod
     def _get_dates(month: int):
@@ -35,7 +37,7 @@ class GoogleSheet:
             return file.add_worksheet(title=f'{month}', rows=45, cols=10)
 
     def get_file(self, user: User, year: int):
-        file_name = f'{prefix} {user.login} {year}'
+        file_name = f'{self.file_prefix} {user.login} {year}'
         try:
             file = self.gs.open(file_name)
         except gspread.exceptions.SpreadsheetNotFound:

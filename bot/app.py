@@ -40,7 +40,7 @@ def start_app(config, bot):
 def main():
     config = Config()
     connect_db(config.mongo)
-    gs = GoogleSheet(config.gs_creds)
+    gs = GoogleSheet(config.gs)
     bot = init_bot(config.tg, gs)
     logger.info('Bot is ready to work.')
     start_app(config, bot)

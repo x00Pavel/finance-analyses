@@ -1,8 +1,9 @@
-from pydantic import BaseSettings, SecretStr, BaseModel, validator
+from pydantic import BaseSettings, SecretStr, validator
+
 
 def get_ngrok_url():
     import requests
-    ngork_url = 'http://localhost:4040/api/tunnels'
+    ngork_url = 'http://ngrok:4040/api/tunnels'
     return requests.get(ngork_url).json()['tunnels'][0]['public_url']
 
 
@@ -34,7 +35,15 @@ class TGConfig(BaseSettings):
         return v
 
 
+class GSConfig(BaseSettings):
+    creds: str
+    file_prefix: str = 'testing'
+
+    class Config:
+        env_prefix = 'gs_'
+
+
 class Config(BaseSettings):
     tg: TGConfig = TGConfig()
     mongo: MongoConfig = MongoConfig()
-    gs_creds: str = 'creds.json'
+    gs: GSConfig = GSConfig()
