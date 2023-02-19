@@ -1,7 +1,7 @@
 FROM python:3.10
 WORKDIR /opt/app
 COPY bot/ bot/
-COPY poetry.lock pyproject.toml credentials.json ./
-RUN pip install poetry
-RUN poetry config virtualenvs.create false && poetry install
-ENTRYPOINT ["poetry", "run", "start"]
+COPY credentials.json pyproject.toml poetry.lock ./
+RUN pip install poetry && poetry config virtualenvs.create false && poetry install --without dev
+ENV PORT=8080
+ENTRYPOINT gunicorn --bind :$PORT --log-level DEBUG "bot.app:create_app()" --timeout 0
