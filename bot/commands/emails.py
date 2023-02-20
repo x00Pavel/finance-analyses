@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 def register_emails_commands(bot):
     def email_adder(message):
+        logger.debug('Adding emails')
         result_emails = []
         emails = message.text.split(' ')
         for email in emails:
@@ -20,6 +21,7 @@ def register_emails_commands(bot):
             except EmailNotValidError as e:
                 bot.send_message(message.chat.id, f'Email {email} is not valid: {e}')
         result = get_user(message.from_user).add_additional_email(result_emails)
+        logger.debug('Update result: %s', result)
         msg = f'Emails are updated to {result.additional_emails}'
         logger.debug('Sending message: %s', msg)
         bot.send_message(message.chat.id, msg)

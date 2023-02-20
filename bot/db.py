@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 def connect_db(config: MongoConfig):
-    url = f"mongodb://{config.user}:{config.passwd.get_secret_value()}@{config.host}:{config.port}"
-    connect(config.db, host=url)
+    connection = connect(config.db, username=config.user, password=config.passwd.get_secret_value(), host=config.host,)
+    logger.info(f'Connected to MongoDB: {connection}')
 
 
 class User(Document):
@@ -33,6 +33,7 @@ def store_user(user_id, user_email) -> Document:
 
 
 def get_user(user_id) -> User:
+    logger.debug(f'Getting user by id: {user_id}')
     login = user_id.username or str(user_id.id)
     return User.objects(login=login).first()
 
