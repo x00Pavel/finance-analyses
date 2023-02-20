@@ -23,7 +23,7 @@ class User(Document):
         return self.save()
 
     def add_category(self, category: str):
-        self.categories = set(filter(None, category.split(' ')))
+        self.categories = list(set(filter(None, category.split(' '))))
         logger.debug(f'Result categories: {self.categories}')
         return self.save()
 
