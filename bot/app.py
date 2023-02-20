@@ -21,12 +21,6 @@ def create_app():
     gs = GoogleSheet(config.gs)
     bot = init_bot(config.tg, gs)
     logger.info('Bot is ready to work.')
-    bot.delete_webhook()
-    if config.tg.webhook_url:
-        logger.debug('Webhook url is set. Setting webhook.')
-        url = '/'.join(i.strip("/") for i in [config.tg.webhook_url, bot.token])
-        logger.info(f'Setting webhook to {url}')
-        bot.set_webhook(url=url)
 
     @app.route('/')
     def index():

@@ -6,9 +6,10 @@ from datetime import datetime
 from enum import Enum
 
 from mongoengine import Document
+from telebot.types import BotCommand
 
 from bot.db import User
-from bot.helpers import get_raw_message, date_format
+from bot.helpers import date_format
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +73,19 @@ class CommandsEnum(Enum):
     ADD = 'add'
     HELP = 'help'
     ADD_EMAIL = 'add_email'
+
+
+commands_description = [
+    BotCommand(command=CommandsEnum.START.value, description='Start bot'),
+    BotCommand(command=CommandsEnum.LIST.value, description='List of available commands'),
+    BotCommand(command=CommandsEnum.ADD_CATEGORY.value, description='Add category to your list'),
+    BotCommand(command=CommandsEnum.LOGIN.value, description='Add email to share the spreadsheets with it'),
+    BotCommand(command=CommandsEnum.NEW.value, description='Create new spreadsheet'),
+    BotCommand(command=CommandsEnum.ADD.value,
+               description='Add new expanses to the spreadsheet. '
+                           'You can specify all values to the command, or bot will ask you for them. '
+                           'Values should be separated by space and passed in any order. '
+                           'For example: /add 100 food 2021-01-01 or /add 100'),
+    BotCommand(command=CommandsEnum.HELP.value, description='Help'),
+    BotCommand(command=CommandsEnum.ADD_EMAIL.value, description='Add email to share the spreadsheets with it'),
+]
