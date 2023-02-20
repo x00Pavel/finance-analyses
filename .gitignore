@@ -4,3 +4,4 @@ __*cache*__
 .ipynb*
 .env
 credentials.json
+*.ipynb
