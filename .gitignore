@@ -5,3 +5,4 @@ __*cache*__
 .env
 credentials.json
 *.ipynb
+/docs/build/
