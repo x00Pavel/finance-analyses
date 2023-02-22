@@ -6,7 +6,23 @@ from telebot.types import Message
 from bot.datatypes import CommandsEnum
 from bot.db import User
 
-welcome_msg = f"Please, use /{CommandsEnum.LOGIN.value} command to add your email ID to share the spreadsheets with it."
+welcome_msg = """
+Hello! I'm a bot and my mission is to help you to track your expenses.
+On your first login I will create a spreadsheet for you.
+This spreadsheet I will use for adding your expanses for this year (new file for each year :).
+So, after login check your inbox for the email from Google with the link to the spreadsheet. 
+
+You can use **Menu** button to navigate through the commands.
+To see more details about the command use /help <command_name> or check the documentation on official website.
+
+Quick help how to start:
+1. /login - to provide your email to the bot and create a spreadsheet for you
+2. /add_category - to add categories for your expanses
+3. /add - to add new expense
+4. Check your email for the link to the spreadsheet
+5. Keep tracking your expanses :)
+"""
+
 logger = logging.getLogger(__name__)
 
 

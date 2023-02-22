@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 
 from telebot import TeleBot
 
@@ -14,10 +15,11 @@ def init_bot(config: TGConfig, gs: GoogleSheet):
     bot = TeleBot(config.token.get_secret_value(), threaded=True)
     bot.delete_webhook()
     if config.webhook_url:
-        logger.debug('Webhook url is set. Setting webhook.')
+        logger.debug('Webhook url is set. Updating webhook.')
         url = '/'.join(i.strip("/") for i in [config.webhook_url, bot.token])
         logger.info(f'Setting webhook to {url}')
         bot.set_webhook(url=url)
+        sleep(2)
     if bot.delete_my_commands():
         logger.debug('Commands are deleted')
     else:
