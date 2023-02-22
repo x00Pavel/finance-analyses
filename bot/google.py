@@ -57,11 +57,10 @@ class GoogleSheet:
         ws = self.get_sheet(file, month)
 
         num_of_columns = 1 + len(user.categories)
-        my_list = [[None for _ in range(num_of_columns)] for _ in range(len(dates_list) + 1)]
+        my_list = [['=0' for _ in range(num_of_columns)] for _ in range(len(dates_list) + 1)]
         my_list[0] = ['Date', *user.categories]
         for i, date_ in enumerate(dates_list, 1):
             my_list[i][0] = date_.strftime('%d.%m.%Y')
-            my_list[i][1:] = ["=0" for _ in range(len(user.categories))]
         last_column = chr(ord('A') + num_of_columns)
         last_row = len(dates_list) + 1
         cell_range = f'A1:{last_column}{last_row}'
