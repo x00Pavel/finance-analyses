@@ -1,0 +1,12 @@
+---
+- hosts: server
+  become: true
+  vars:
+    curr_dir: "{{ lookup('env', 'PWD') }}"
+  tasks:
+
+  - name: Dummy task
+    shell: echo "Hello Wolrd!"
+  
+  # roles:
+  #   - role_1  
