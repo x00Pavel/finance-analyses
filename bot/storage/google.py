@@ -5,15 +5,16 @@ import gspread
 
 from bot.config import GSConfig
 from bot.datatypes import CommandsEnum
-from bot.db import get_user, User
+from bot.storage.db import User
 from bot.exceptions import BotException
+from bot.storage.storage_base import Storage
 
 logger = logging.getLogger(__name__)
 
-prefix = 'Expenses'
+prefix = "Expenses"
 
 
-class GoogleSheet:
+class GoogleSheet(Storage):
     def __init__(self, cfg: GSConfig):
         self.gs = gspread.service_account(filename=cfg.creds)
         self.file_prefix = cfg.file_prefix
@@ -33,54 +34,75 @@ class GoogleSheet:
             month = month_name[month]
             return file.worksheet(f"{month}")
         except gspread.exceptions.WorksheetNotFound:
-            logger.info(f'Creating sheet for {month}')
-            return file.add_worksheet(title=f'{month}', rows=45, cols=10)
+            logger.info(f"Creating sheet for {month}")
+            return file.add_worksheet(title=f"{month}", rows=45, cols=10)
 
     def get_file(self, user: User, year: int):
-        file_name = f'{self.file_prefix} {user.login} {year}'
+        file_name = f"{self.file_prefix} {user.login} {year}"
         try:
             file = self.gs.open(file_name)
+            perms = self.gs.insert_permission(
+                file.id,
+                user.personal_email,
+                perm_type="user",
+                role="owner",
+                notify=True,
+            )
+            logger.debug(f"Permissions: {perms}")
+            file.transfer_ownership(perms["id"])
+            logger.info(f"Transferring ownership {user.personal_email} for {file_name}")
+
         except gspread.exceptions.SpreadsheetNotFound:
-            logger.info(f'Creating file {file_name}')
+            logger.info(f"Creating file {file_name}")
             file = self.gs.create(file_name)
-            file.share(user.personal_email, perm_type='user', role='writer')
-            logger.info(f'Sharing file with {user.personal_email} for {file_name}')
 
         return file
 
     def create_sheet(self, user: User, month: int = None):
+        logger.debug("Start preparing new sheet for user %s", user.id)
         date_year = datetime.now().year
         if not user.categories:
-            raise BotException(f'Please, provide categories with /{CommandsEnum.ADD_CATEGORY.value} command')
+            raise BotException(
+                f"Please, provide categories with /{CommandsEnum.ADD_CATEGORY.value} command"
+            )
         dates_list = self._get_dates(month)
         file = self.get_file(user, date_year)
+        logger.debug("File %s opened", file.title)
         ws = self.get_sheet(file, month)
+        logger.debug("Sheet %s opened", ws.title)
 
         num_of_columns = 1 + len(user.categories)
-        my_list = [['=0' for _ in range(num_of_columns)] for _ in range(len(dates_list) + 1)]
-        my_list[0] = ['Date', *user.categories]
+        my_list = [
+            ["=0" for _ in range(num_of_columns)] for _ in range(len(dates_list) + 1)
+        ]
+        my_list[0] = ["Date", *user.categories]
         for i, date_ in enumerate(dates_list, 1):
-            my_list[i][0] = date_.strftime('%d.%m.%Y')
-        last_column = chr(ord('A') + num_of_columns)
+            my_list[i][0] = date_.strftime("%d.%m.%Y")
+        last_column = chr(ord("A") + num_of_columns)
         last_row = len(dates_list) + 1
-        cell_range = f'A1:{last_column}{last_row}'
+        cell_range = f"A1:{last_column}{last_row}"
         ws.update(cell_range, my_list, raw=False)
-        return month_name[month]
+        logger.debug("Sheet %s updated", ws.title)
+        return month_name[month], ws.url
 
     def write_expanse(self, expanse: "Expanses"):
         if expanse.user is None:
-            return 'User not found in database'
+            return "User not found in database"
         if not expanse.user.categories:
-            return f'No categories found for user {expanse.user}. ' \
-                   f'Please add categories with /{CommandsEnum.ADD_CATEGORY.value} command'
+            return (
+                f"No categories found for user {expanse.user}. "
+                f"Please add categories with /{CommandsEnum.ADD_CATEGORY.value} command"
+            )
         if expanse.category not in expanse.user.categories:
-            return f'Category {expanse.category} not found for user {expanse.user}. ' \
-                   f'Please add categories with /{CommandsEnum.ADD_CATEGORY.value} command'
+            return (
+                f"Category {expanse.category} not found for user {expanse.user}. "
+                f"Please add categories with /{CommandsEnum.ADD_CATEGORY.value} command"
+            )
 
         file = self.get_file(expanse.user, expanse.date.year)
         ws = self.get_sheet(file, expanse.date.month)
-        date_row = ws.find(expanse.date.strftime('%d.%m.%Y'))
+        date_row = ws.find(expanse.date.strftime("%d.%m.%Y"))
         category_column = ws.find(expanse.category)
         cell = ws.cell(date_row.row, category_column.col)
-        logger.info(f'Writing {expanse} to {ws.title} at {cell.address}')
+        logger.info(f"Writing {expanse} to {ws.title} at {cell.address}")
         ws.update(cell.address, f"={cell.value}+{expanse.amount}", raw=False)

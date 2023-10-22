@@ -1,0 +1,66 @@
+---
+- name: Build and deploy Bot app to RPI
+  hosts: localhost
+  vars:
+    curr_dir: "{{ playbook_dir }}"
+    source_dir: "{{ curr_dir }}/.."
+    source_dir_normal: "{{ source_dir | realpath }}"
+    app_container_name: "fin-bot"
+    registry: "rpi:5001"
+    version_file: "{{ source_dir_normal }}/VERSION"
+    version: "{{ lookup('file', version_file) | int }}"
+    new_version: "{{ version | int + 1 }}"
+    tag: "v{{ new_version }}"
+    full_container_name: "{{ registry }}/{{ app_container_name }}:{{ tag }}"
+  tasks:
+
+    - set_fact:
+        shared_tag: "v{{ new_version  }}" # Maybe this is redundant?
+
+    - debug:
+        msg: "Changing version {{ version }} -> {{ new_version }}"
+
+    - name: "Build and tag container"
+      shell:
+        cmd: docker build -t "{{ full_container_name }}" "{{ source_dir_normal }}"
+
+    - name: "Push image to registry {{ full_container_name }}"
+      shell:
+        cmd: docker push "{{ full_container_name }}"
+
+    - name: "Clean local image"
+      shell:
+        cmd: docker rmi "{{ full_container_name }}"
+
+    - name: Increment version and write to the VERSION file
+      shell:
+        cmd: echo "{{ new_version }}" > "{{ version_file }}"
+        chdir: "{{ source_dir_normal }}"
+
+#    - name: Push new version to git
+#      shell:
+#        cmd: git add "{{ version_file }}" && git commit -m "Version {{ new_version }}" && git push
+#        chdir: "{{ source_dir_normal }}"
+#
+#    - name: Push git tags
+#      shell:
+#        cmd: git tag "{{ tag }}" -m "Version {{ tag }}" && git push --tags
+
+- name: Pull and restart container on server
+  hosts: local
+  gather_facts: false
+  vars:
+    app_container_name: "fin-bot"
+
+  tasks:
+    - debug:
+        msg: "Docker tag: {{ hostvars['localhost']['shared_tag'] }}"
+
+    - name: Restart {{ app_container_name }} app container
+      shell:
+        cmd: /usr/libexec/docker/cli-plugins/docker-compose up --pull always -d --build --force-recreate {{ app_container_name }}
+        chdir: "{{ work_dir }}"
+      environment:
+        APP_TAG: "{{ hostvars['localhost']['shared_tag'] }}"
+        APP_NAME: "{{ app_container_name }}"
+

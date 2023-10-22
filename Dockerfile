@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 WORKDIR /opt/app
 COPY bot/ bot/
 COPY credentials.json pyproject.toml poetry.lock ./

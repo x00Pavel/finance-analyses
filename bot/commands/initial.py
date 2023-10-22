@@ -4,7 +4,7 @@ from email_validator import EmailNotValidError, validate_email
 from telebot.types import Message
 
 from bot.datatypes import CommandsEnum
-from bot.db import User
+from bot.storage.db import User
 
 welcome_msg = """
 Hello! I'm a bot and my mission is to help you to track your expenses.
@@ -30,12 +30,17 @@ def register_initial_commands(bot):
     def email_handler(message: Message):
         try:
             email = validate_email(message.text).email
-            user = User(login=message.from_user.username or str(message.from_user.id), personal_email=email).save()
-            bot.send_message(message.chat.id, f'Email {email} added to {user.login}')
+            user = User(
+                login=message.from_user.username or str(message.from_user.id),
+                personal_email=email,
+            ).save()
+            bot.send_message(message.chat.id, f"Email {email} added to {user.login}")
         except EmailNotValidError as e:
-            text = f'Email is not valid {e} Please, use /{CommandsEnum.LOGIN.value} command  again with valid email ' \
-                   f'address.'
-            logger.debug(f'Email is not valid {e}')
+            text = (
+                f"Email is not valid {e} Please, use /{CommandsEnum.LOGIN.value} command  again with valid email "
+                f"address."
+            )
+            logger.debug(f"Email is not valid {e}")
             bot.send_message(message.chat.id, text)
 
     @bot.message_handler(commands=[CommandsEnum.START.value, CommandsEnum.HELP.value])
@@ -44,18 +49,21 @@ def register_initial_commands(bot):
 
     @bot.message_handler(commands=[CommandsEnum.LIST.value])
     def list_commands(message):
-        cmd_list = '\n'.join([f'/{c.value}' for c in CommandsEnum])
+        cmd_list = "\n".join([f"/{c.value}" for c in CommandsEnum])
         bot.send_message(message.chat.id, f"Available commands:\n{cmd_list}")
 
     @bot.message_handler(commands=[CommandsEnum.LOGIN.value])
     def login(message):
-        parts = message.text.split(' ')
-        logger.debug('New logging attempt')
+        parts = message.text.split(" ")
+        logger.debug("New logging attempt")
         if len(parts) < 2:
-            msg = bot.send_message(message.chat.id, 'Please, provide email to share the spreadsheets with it.')
+            msg = bot.send_message(
+                message.chat.id,
+                "Please, provide email to share the spreadsheets with it.",
+            )
             bot.register_next_step_handler(msg, email_handler)
         else:
             message.text = parts[1]
             email_handler(message)
 
-    logger.info('Initial commands registered')
+    logger.info("Initial commands registered")
