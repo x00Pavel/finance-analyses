@@ -2,14 +2,13 @@ import logging
 from datetime import datetime
 
 from telebot import formatting
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from bot.datatypes import CommandsEnum, Expanses
-from bot.db import get_user
+from bot.storage.db import get_user
 from bot.exceptions import BotException
-from bot.google import GoogleSheet
 from bot.helpers import date_format, get_raw_message
-from bot.storage import Storage
+from bot.storage.storage_base import Storage
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,7 @@ def gen_categories_buttons(expanse: Expanses):
     return markup
 
 
-def register_gs_commands(bot, storage: Storage):
+def register_storage_commands(bot, storage: Storage):
     # @bot.message_handler(commands=[CommandsEnum.NEW.value])
     # def new_sheet(message):
     #     month = get_month(message.text)
@@ -106,6 +105,7 @@ def register_gs_commands(bot, storage: Storage):
         evaluate_expense(call.message.chat.id, expense)
 
     def amount_handler(message, expense: Expanses):
+        logger.debug(f"Amount handler: {message.text}")
         try:
             expense.amount = float(message.text)
             evaluate_expense(message.chat.id, expense)
@@ -115,8 +115,10 @@ def register_gs_commands(bot, storage: Storage):
 
     @bot.message_handler(commands=[CommandsEnum.ADD.value])
     def add_expense(message):
+        logger.debug(f"Add expense: {message.text}")
         try:
             user = get_user(message.from_user)
+            logger.debug(f"User: {user}")
             if not user:
                 raise BotException(
                     f"You are not logged in. Please, use /{CommandsEnum.LOGIN.value} for this"
